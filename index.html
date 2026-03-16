@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CC5 Reviewer</title>
+  <style>
+    :root{
+      --bg1:#edf9f0;
+      --bg2:#dff3e6;
+      --card:#ffffff;
+      --primary:#7dc99a;
+      --primary-dark:#58a978;
+      --primary-soft:#e8f8ee;
+      --accent:#c9efd8;
+      --text:#1f3b2c;
+      --muted:#5b7768;
+      --good:#45a049;
+      --bad:#d96b6b;
+      --shadow:0 12px 28px rgba(57,110,78,.12);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Arial, Helvetica, sans-serif;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      color:var(--text);
+      min-height:100vh;
+    }
+    .wrap{
+      width:min(1180px,94%);
+      margin:22px auto 40px;
+    }
+    .hero{
+      background:rgba(255,255,255,.82);
+      backdrop-filter:blur(8px);
+      border:1px solid #eefbf2;
+      border-radius:32px;
+      box-shadow:var(--shadow);
+      padding:28px 20px;
+      text-align:center;
+    }
+    .hero h1{
+      margin:0 0 8px;
+      color:var(--primary-dark);
+      font-size:clamp(2rem,4vw,3rem);
+    }
+    .hero p{
+      margin:0 auto;
+      max-width:860px;
+      line-height:1.6;
+      color:var(--muted);
+    }
+    .tag{
+      display:inline-block;
+      margin-top:14px;
+      padding:10px 16px;
+      border-radius:999px;
+      background:#f1fcf4;
+      border:1px solid #d7f0df;
+      color:var(--primary-dark);
+      font-weight:700;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:18px;
+      margin-top:18px;
+    }
+    @media (max-width:930px){
+      .layout{grid-template-columns:1fr}
+    }
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+    .section-title{
+      margin:0 0 14px;
+      color:var(--primary-dark);
+      font-size:1.2rem;
+    }
+    .chapter-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+      gap:12px;
+    }
+    .chapter-btn{
+      border:none;
+      border-radius:18px;
+      padding:14px 12px;
+      background:linear-gradient(180deg,#f5fff7,#ddf4e5);
+      color:var(--text);
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+      box-shadow:0 8px 16px rgba(72,144,102,.08);
+    }
+    .chapter-btn:hover{transform:translateY(-2px)}
+    .chapter-btn.active{
+      background:linear-gradient(180deg,var(--primary),var(--primary-dark));
+      color:#fff;
+    }
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+      margin-top:16px;
+    }
+    @media (max-width:700px){
+      .stats{grid-template-columns:repeat(2,1fr)}
+    }
+    .stat{
+      background:#f8fffa;
+      border:1px solid #dcefe3;
+      border-radius:18px;
+      padding:14px;
+      text-align:center;
+    }
+    .stat h3{
+      margin:0;
+      color:var(--primary-dark);
+      font-size:1.35rem;
+    }
+    .stat p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+    .quiz{
+      margin-top:18px;
+      display:none;
+    }
+    .quiz-head{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .pill{
+      padding:8px 12px;
+      border-radius:999px;
+      background:#f0fbf3;
+      border:1px solid #d8efdf;
+      color:var(--primary-dark);
+      font-weight:700;
+      font-size:.92rem;
+    }
+    .question-box{
+      background:linear-gradient(180deg,#fbfffc,#f4fcf7);
+      border:1px solid #dcefe3;
+      border-radius:22px;
+      padding:18px;
+    }
+    .question-box h3{
+      margin:0 0 10px;
+      line-height:1.45;
+      font-size:1.08rem;
+    }
+    .question-box p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.6;
+      font-size:.95rem;
+    }
+    .choices{
+      display:grid;
+      gap:12px;
+      margin-top:18px;
+    }
+    .choice{
+      width:100%;
+      text-align:left;
+      padding:14px 16px;
+      border-radius:16px;
+      border:2px solid #d9eee0;
+      background:#fff;
+      cursor:pointer;
+      color:var(--text);
+      font-size:1rem;
+      transition:.18s ease;
+    }
+    .choice:hover{
+      background:#f8fff9;
+      transform:translateY(-1px);
+    }
+    .choice.correct{
+      background:#e8f7eb;
+      border-color:var(--good);
+      color:#1f6a29;
+    }
+    .choice.wrong{
+      background:#ffeaea;
+      border-color:var(--bad);
+      color:#8f2c2c;
+    }
+    .feedback{
+      margin-top:14px;
+      padding:14px;
+      border-radius:16px;
+      background:#f6fff8;
+      border:1px solid #d8efdf;
+      display:none;
+      line-height:1.6;
+    }
+    .feedback.show{display:block}
+    .controls{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+    .btn{
+      border:none;
+      border-radius:14px;
+      padding:12px 16px;
+      font-weight:700;
+      cursor:pointer;
+      transition:.18s ease;
+    }
+    .btn.primary{
+      background:linear-gradient(180deg,var(--primary),var(--primary-dark));
+      color:#fff;
+      box-shadow:0 10px 18px rgba(88,169,120,.18);
+    }
+    .btn.secondary{
+      background:#eefaf2;
+      color:var(--primary-dark);
+    }
+    .btn:disabled{
+      opacity:.58;
+      cursor:not-allowed;
+    }
+    .result{
+      display:none;
+      margin-top:16px;
+      text-align:center;
+      background:linear-gradient(180deg,#fafffb,#eef8f2);
+      border:1px solid #dcefe3;
+      border-radius:20px;
+      padding:22px;
+    }
+    .result.show{display:block}
+    .big{
+      font-size:2.8rem;
+      color:var(--primary-dark);
+      font-weight:800;
+      margin:8px 0;
+    }
+    .badge-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-top:12px;
+    }
+    .badge{
+      background:#f0fbf3;
+      border:1px solid #d7f0df;
+      color:var(--primary-dark);
+      border-radius:999px;
+      padding:10px 12px;
+      font-weight:700;
+      font-size:.9rem;
+    }
+    .notes{
+      max-height:760px;
+      overflow:auto;
+      padding-right:2px;
+    }
+    .note{
+      background:#fbfffc;
+      border:1px solid #dcefe3;
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+    .note h4{
+      margin:0 0 8px;
+      color:var(--primary-dark);
+    }
+    .note ul{
+      margin:0;
+      padding-left:18px;
+      line-height:1.55;
+    }
+    .footer{
+      text-align:center;
+      margin-top:18px;
+      color:var(--muted);
+      font-size:.92rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Pastel Green Reviewer Game</h1>
+      <p>
+        Slide-based reviewer with sounds, interactive answering, separate chapters, and browser-ready code.
+        Pick a chapter and play the quiz like a review game before your exam.
+      </p>
+      <div class="tag">5 Chapters • 20 Questions Each • Pastel Green • Sound Effects</div>
+    </section>
+
+    <div class="layout">
+      <section class="card">
+        <h2 class="section-title">Choose a Chapter</h2>
+        <div class="chapter-grid" id="chapterGrid"></div>
+
+        <div class="stats">
+          <div class="stat">
+            <h3 id="scoreStat">0</h3>
+            <p>Score</p>
+          </div>
+          <div class="stat">
+            <h3 id="progressStat">0/0</h3>
+            <p>Progress</p>
+          </div>
+          <div class="stat">
+            <h3 id="chapterStat">None</h3>
+            <p>Chapter</p>
+          </div>
+          <div class="stat">
+            <h3 id="bestStat">0%</h3>
+            <p>Result</p>
+          </div>
+        </div>
+
+        <div class="quiz" id="quizBox">
+          <div class="quiz-head">
+            <div class="pill" id="chapterPill">Chapter</div>
+            <div class="pill" id="questionPill">Question 1</div>
+          </div>
+
+          <div class="question-box">
+            <h3 id="questionText">Question here</h3>
+            <p id="questionHint">Hint here</p>
+          </div>
+
+          <div class="choices" id="choicesBox"></div>
+          <div class="feedback" id="feedbackBox"></div>
+
+          <div class="controls">
+            <button class="btn primary" id="nextBtn" disabled>Next</button>
+            <button class="btn secondary" id="restartBtn">Restart Chapter</button>
+            <button class="btn secondary" id="soundBtn">Sound: ON</button>
+          </div>
+
+          <div class="result" id="resultBox">
+            <div>Chapter Finished</div>
+            <div class="big" id="finalScore">0/20</div>
+            <p id="finalMessage"></p>
+            <div class="badge-row" id="badgeRow"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2 class="section-title">Quick Reviewer Notes</h2>
+        <div class="notes" id="notesBox">
+          <div class="note">
+            <h4>How to use</h4>
+            <ul>
+              <li>Choose a chapter first.</li>
+              <li>Read the reviewer notes.</li>
+              <li>Tap your answer to hear sound feedback.</li>
+              <li>Use this in Chrome, Safari, Edge, or mobile browsers.</li>
+              <li>Upload this single file to GitHub Pages to share it.</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="footer">
+      Save as <strong>index.html</strong>, upload to GitHub, and enable GitHub Pages.
+    </div>
+  </div>
+
+  <script>
+    const chapters = [
+      {
+        id: "chap1",
+        title: "Chapter 1",
+        subtitle: "Software & Software Engineering",
+        notes: [
+          { heading: "Software Basics", bullets: [
+            "Software includes instructions, data structures, and documents.",
+            "Software is engineered, not manufactured.",
+            "Software does not wear out in the classical hardware sense."
+          ]},
+          { heading: "Layered Technology", bullets: [
+            "Quality focus is the foundation.",
+            "Process, methods, and tools are the layers."
+          ]},
+          { heading: "Framework Activities", bullets: [
+            "Communication, Planning, Modeling, Construction, Deployment"
+          ]},
+          { heading: "Umbrella Activities", bullets: [
+            "Project management, formal technical reviews, SQA, configuration management, work product preparation, reusability management, measurement, risk management"
+          ]}
+        ],
+        questions: [
+          {q:"Software consists of which three main elements?",h:"Definition slide",c:["Instructions, data structures, and documents","Hardware, software, and users","Programs, printers, and routers","Input, process, and output"],a:0,e:"Software includes instructions, data structures, and documents."},
+          {q:"Which statement about software is correct?",h:"Basic software characteristics",c:["Software is manufactured like hardware","Software is engineered or developed","Software cannot be changed","Software always physically wears out"],a:1,e:"The slides state that software is developed or engineered, not manufactured."},
+          {q:"Software engineering is defined by IEEE as what kind of approach?",h:"Software Engineering slide",c:["Random and creative only","Systematic, disciplined, and quantifiable","Hardware-centered only","Manual and mechanical"],a:1,e:"IEEE defines software engineering as a systematic, disciplined, and quantifiable approach."},
+          {q:"In layered technology, what is the foundation?",h:"A Layered Technology",c:["Methods","Tools","Quality focus","Deployment"],a:2,e:"Quality focus is the foundation of software engineering as layered technology."},
+          {q:"Which of the following is NOT one of the main layers shown?",h:"Layered technology",c:["Process","Methods","Tools","Servers"],a:3,e:"The layers shown are quality focus, process, methods, and tools."},
+          {q:"Which framework activity is focused on understanding stakeholder objectives and gathering requirements?",h:"Framework activities",c:["Communication","Construction","Deployment","Testing"],a:0,e:"Communication is used to collaborate with stakeholders and gather requirements."},
+          {q:"Which framework activity creates the software project plan?",h:"Planning slide",c:["Planning","Modeling","Deployment","Maintenance"],a:0,e:"Planning creates the software project plan."},
+          {q:"Which framework activity creates a sketch to better understand requirements and design?",h:"Modeling slide",c:["Communication","Modeling","Construction","Deployment"],a:1,e:"Modeling creates a sketch or model to understand requirements and design."},
+          {q:"Which framework activity combines code generation and testing?",h:"Construction slide",c:["Planning","Analysis","Construction","Support"],a:2,e:"Construction combines code generation and testing."},
+          {q:"Which framework activity delivers software to the customer and gets feedback?",h:"Deployment slide",c:["Modeling","Construction","Deployment","Communication"],a:2,e:"Deployment is delivery plus feedback."},
+          {q:"Which umbrella activity helps the team assess progress against the project plan?",h:"Umbrella activities",c:["Software project management","Risk management","Measurement","Construction"],a:0,e:"Software project management tracks progress against the plan."},
+          {q:"Which umbrella activity uncovers and removes errors before they move to the next activity?",h:"Umbrella activities",c:["Formal technical reviews","Deployment","Reusability management","Planning"],a:0,e:"Formal technical reviews uncover and remove errors before propagation."},
+          {q:"Which umbrella activity defines and conducts activities to ensure software quality?",h:"Umbrella activities",c:["Software quality assurance","Software configuration management","Project scheduling","Coding"],a:0,e:"SQA ensures software quality."},
+          {q:"Which umbrella activity manages the effects of change throughout the software process?",h:"Umbrella activities",c:["Software configuration management","Measurement","Testing","Communication"],a:0,e:"Software configuration management handles the effects of change."},
+          {q:"Which umbrella activity creates models, documents, logs, forms, and lists?",h:"Umbrella activities",c:["Work product preparation and production","Formal methods","Refactoring","Pair programming"],a:0,e:"Work product preparation and production covers creation of work products."},
+          {q:"Which umbrella activity defines criteria for work product reuse?",h:"Umbrella activities",c:["Risk management","Reusability management","SQA","Deployment"],a:1,e:"Reusability management defines reuse criteria and mechanisms."},
+          {q:"Which umbrella activity defines and collects process, project, and product measures?",h:"Umbrella activities",c:["Measurement","Planning","Modeling","Testing"],a:0,e:"Measurement defines and collects process, project, and product measures."},
+          {q:"Which umbrella activity assesses risks that may affect project outcome or product quality?",h:"Umbrella activities",c:["Risk management","SQA","Construction","Deployment"],a:0,e:"Risk management assesses project and product risks."},
+          {q:"Which is a software application type listed in the slides?",h:"Software applications",c:["Embedded software","Mechanical software","Printed software","Manual software"],a:0,e:"Embedded software is one of the listed software application types."},
+          {q:"Which phrase appears in the essence of practice?",h:"Polya suggestion slide",c:["Understand the problem","Avoid communication","Skip testing","Ignore planning"],a:0,e:"The slide includes understand the problem, plan a solution, carry out the plan, and examine the result."}
+        ]
+      },
+      {
+        id: "chap2",
+        title: "Chapter 2",
+        subtitle: "Process Models",
+        notes: [
+          { heading: "Evolutionary Models", bullets: [
+            "Prototyping, Spiral, Concurrent"
+          ]},
+          { heading: "Other Models", bullets: [
+            "Component-based development, Formal methods, AOSD, Unified Process"
+          ]},
+          { heading: "UP Phases", bullets: [
+            "Inception, Elaboration, Construction, Transition, Production"
+          ]}
+        ],
+        questions: [
+          {q:"Which evolutionary model uses quick plan, quick design, construction of prototype, and delivery with feedback?",h:"Prototyping slide",c:["Prototyping","Spiral","Concurrent","UP"],a:0,e:"That sequence belongs to the prototyping model."},
+          {q:"Which model explicitly includes risk analysis?",h:"Spiral slide",c:["Waterfall","Spiral","Concurrent","Scrum"],a:1,e:"Risk analysis is a defining part of the spiral model."},
+          {q:"Which model shows states like under development, under review, and done?",h:"Concurrent model",c:["Concurrent","Formal methods","Prototype","AOSD"],a:0,e:"The concurrent model represents software activities as states."},
+          {q:"Component-based development is used when what is a development objective?",h:"Still Other Process Models",c:["Reuse","Outsourcing only","Documentation only","Animation"],a:0,e:"Component-based development is used when reuse is an objective."},
+          {q:"Formal methods emphasize what?",h:"Still Other Process Models",c:["Mathematical specification of requirements","Pair programming","Team stand-ups","Risk-free coding"],a:0,e:"Formal methods emphasize mathematical specification of requirements."},
+          {q:"AOSD stands for what?",h:"Still Other Process Models",c:["Aspect-Oriented Software Development","Agile-Oriented System Design","Automated Object Software Deployment","Applied Operational Software Design"],a:0,e:"AOSD stands for Aspect-Oriented Software Development."},
+          {q:"Unified Process is described as what kind of process?",h:"UP description",c:["Use-case driven, architecture-centric, iterative and incremental","Linear and non-iterative","Hardware-only and sequential","Risk-free and fixed"],a:0,e:"That exact phrase is used for Unified Process."},
+          {q:"Which UP phase encompasses both customer communication and planning activities?",h:"UP phases",c:["Inception","Elaboration","Construction","Transition"],a:0,e:"Inception covers communication and planning."},
+          {q:"Which UP phase encompasses communication and modeling activities?",h:"UP phases",c:["Production","Elaboration","Transition","Construction"],a:1,e:"Elaboration encompasses communication and modeling."},
+          {q:"Which UP phase is identical to the construction activity in the generic process model?",h:"UP phases",c:["Construction","Production","Transition","Inception"],a:0,e:"Construction in UP matches the generic construction activity."},
+          {q:"Which UP phase includes later construction and the first part of deployment?",h:"UP phases",c:["Transition","Elaboration","Production","Planning"],a:0,e:"Transition includes the latter construction stages and early deployment."},
+          {q:"Which UP phase coincides with the deployment activity of the generic process?",h:"UP phases",c:["Production","Construction","Elaboration","Inception"],a:0,e:"Production coincides with deployment."},
+          {q:"Which of these is an evolutionary model?",h:"Process model grouping",c:["Spiral","Formal methods","AOSD","UP only"],a:0,e:"Spiral is listed under evolutionary models."},
+          {q:"Which of these is NOT under evolutionary models in the slides?",h:"Evolutionary models",c:["Prototyping","Concurrent","Formal methods","Spiral"],a:2,e:"Formal methods is listed under still other process models."},
+          {q:"The concurrent model mainly represents what?",h:"Concurrent model",c:["The state of a software engineering activity or task","Only source code lines","Only user stories","Only test results"],a:0,e:"The slide says it represents the state of an activity or task."},
+          {q:"Which spiral model term appears together with estimation and scheduling?",h:"Spiral slide",c:["Risk analysis","Project closure","Maintenance only","Debugging"],a:0,e:"The spiral model slide shows estimation, scheduling, and risk analysis."},
+          {q:"Which phase comes first in UP?",h:"UP order",c:["Inception","Production","Transition","Construction"],a:0,e:"The UP begins with inception."},
+          {q:"Which phase comes after Elaboration in UP?",h:"UP order",c:["Construction","Production","Inception","Support"],a:0,e:"The order is Inception, Elaboration, Construction, Transition, Production."},
+          {q:"Which model is closely aligned with UML according to the slide?",h:"UP description",c:["Unified Process","Spiral","Prototype","Concurrent"],a:0,e:"Unified Process is described as closely aligned with UML."},
+          {q:"Which term appears in the prototype model after delivery?",h:"Prototype cycle",c:["Feedback","Risk analysis","Baselining","Production"],a:0,e:"The prototyping model shows delivery and feedback."}
+        ]
+      },
+      {
+        id: "chap3",
+        title: "Chapter 3",
+        subtitle: "Agile Development",
+        notes: [
+          { heading: "Agile Basics", bullets: [
+            "Agility means rapid and adaptive response to change.",
+            "Agile emphasizes customer collaboration, short-lived plans, iterative increments, and adaptation."
+          ]},
+          { heading: "XP", bullets: [
+            "User stories, project velocity, refactoring, unit tests first, pair programming"
+          ]},
+          { heading: "ASD, DSDM, Scrum", bullets: [
+            "ASD uses mission statement and time-boxed release plan.",
+            "DSDM has nine guiding principles.",
+            "Scrum uses backlog and sprints."
+          ]}
+        ],
+        questions: [
+          {q:"According to the Agile Manifesto, which is valued more?",h:"Manifesto slide",c:["Individuals and interactions over processes and tools","Processes and tools over people","Contracts over collaboration","Plans over change"],a:0,e:"The manifesto values individuals and interactions over processes and tools."},
+          {q:"According to the Agile Manifesto, which is valued more?",h:"Manifesto slide",c:["Working software over comprehensive documentation","Documentation over working software","Hardware over software","Testing over coding"],a:0,e:"The manifesto values working software over comprehensive documentation."},
+          {q:"According to the Agile Manifesto, which is valued more?",h:"Manifesto slide",c:["Customer collaboration over contract negotiation","Contracts over customers","Documentation over delivery","Control over adaptability"],a:0,e:"The manifesto values customer collaboration over contract negotiation."},
+          {q:"According to the Agile Manifesto, which is valued more?",h:"Manifesto slide",c:["Responding to change over following a plan","Plans over change","No planning at all","Tools over people"],a:0,e:"The manifesto values responding to change over following a plan."},
+          {q:"What is agility?",h:"What is Agility? slide",c:["Effective rapid and adaptive response to change","Avoiding customers","Heavy documentation only","Strict fixed plans"],a:0,e:"Agility is an effective, rapid, and adaptive response to change."},
+          {q:"An agile process is driven by what?",h:"An Agile Process slide",c:["Customer descriptions of what is required","A fixed contract only","Management guesses","Hardware limits only"],a:0,e:"The agile process is driven by customer descriptions or scenarios."},
+          {q:"An agile process recognizes that what are short-lived?",h:"An Agile Process",c:["Plans","Customers","Increments","Programs"],a:0,e:"Agile recognizes that plans are short-lived."},
+          {q:"An agile process delivers multiple what?",h:"An Agile Process",c:["Software increments","Manuals only","Risk forms","Servers"],a:0,e:"The slide says agile delivers multiple software increments."},
+          {q:"What does XP planning begin with?",h:"XP",c:["User stories","ERD diagrams","Formal methods","Budget tables"],a:0,e:"XP planning begins with user stories."},
+          {q:"In XP, what helps assess what can be delivered in future increments?",h:"XP planning",c:["Project velocity","DRE","KLOC","Use-case points"],a:0,e:"Project velocity helps determine future deliveries."},
+          {q:"Which XP practice is iterative refinement of the internal design?",h:"XP design",c:["Refactoring","Deployment","Scrum","Transition"],a:0,e:"Refactoring is iterative refinement of the internal program design."},
+          {q:"In XP, what should be built before coding begins for a story?",h:"XP coding",c:["A unit test","A release poster","A final report","A database migration"],a:0,e:"XP recommends creating a unit test before coding begins."},
+          {q:"Which XP practice involves two people working together at one computer?",h:"XP coding",c:["Pair programming","Concurrent modeling","Risk pairing","Code freeze"],a:0,e:"Pair programming is an XP practice."},
+          {q:"Adaptive Software Development uses what kind of release plan?",h:"ASD slide",c:["Time-boxed release plan","Unlimited release plan","One-time release only","Hardware release plan"],a:0,e:"ASD uses a time-boxed release plan."},
+          {q:"Which ASD activity is listed for requirements gathering?",h:"ASD slide",c:["JAD","Code review only","Baselining only","Deployment meeting"],a:0,e:"JAD is listed under ASD requirements gathering."},
+          {q:"Which method says active user involvement is imperative?",h:"DSDM principles",c:["DSDM","Spiral","UP","Formal methods"],a:0,e:"Active user involvement is one of DSDM's guiding principles."},
+          {q:"Which method states that all changes during development are reversible?",h:"DSDM principles",c:["DSDM","XP","UP","Prototyping"],a:0,e:"DSDM says all changes during development are reversible."},
+          {q:"Which method states that testing is integrated throughout the life cycle?",h:"DSDM principles",c:["DSDM","Waterfall","UP","Prototype"],a:0,e:"Integrated testing throughout the life cycle is a DSDM principle."},
+          {q:"In Scrum, work occurs in what?",h:"Scrum slide",c:["Sprints","Phases","Waterfalls","Releases only"],a:0,e:"Scrum work occurs in sprints."},
+          {q:"In Scrum, work is derived from what?",h:"Scrum slide",c:["Backlog of existing requirements","Only source code","Only UML diagrams","Only meeting notes"],a:0,e:"Scrum work is derived from a backlog of existing requirements."}
+        ]
+      },
+      {
+        id: "chap4",
+        title: "Chapter 4",
+        subtitle: "System Analysis and Design",
+        notes: [
+          { heading: "Analyst Roles", bullets: [
+            "Business analyst, Infrastructure analyst, Change management analyst, Project manager"
+          ]},
+          { heading: "SDLC", bullets: [
+            "Planning, Analysis, Design, Implementation"
+          ]},
+          { heading: "Deliverables", bullets: [
+            "Project Plan, System Proposal, System Specification, New System and Maintenance Plan"
+          ]},
+          { heading: "Analysis and Design", bullets: [
+            "Analysis strategy, requirements gathering, system proposal",
+            "Design defines architecture, database schema, backend logic, frontend components, and wireframes"
+          ]}
+        ],
+        questions: [
+          {q:"Which analyst focuses on business issues surrounding the system?",h:"Analyst roles",c:["Business analyst","Infrastructure analyst","Change management analyst","Test analyst"],a:0,e:"The business analyst focuses on business issues and business value."},
+          {q:"Which analyst identifies the business value that the system will create?",h:"Business analyst",c:["Business analyst","Project manager","Infrastructure analyst","Support analyst"],a:0,e:"Identifying business value is a business analyst role."},
+          {q:"Which analyst focuses on technical issues surrounding the system and the organization’s technical infrastructure?",h:"Infrastructure analyst",c:["Infrastructure analyst","Business analyst","Change management analyst","UI analyst"],a:0,e:"That is the role of the infrastructure analyst."},
+          {q:"Which analyst ensures the new information system conforms to organizational standards?",h:"Infrastructure analyst",c:["Infrastructure analyst","Business analyst","Project manager","User analyst"],a:0,e:"Infrastructure analysts ensure conformance to organization standards."},
+          {q:"Which analyst focuses on people and management issues surrounding installation?",h:"Change management analyst",c:["Change management analyst","Infrastructure analyst","Business analyst","Operations analyst"],a:0,e:"That is the change management analyst."},
+          {q:"Which analyst provides user training?",h:"Change management analyst",c:["Change management analyst","Project manager","Business analyst","Data analyst"],a:0,e:"User training is one of the change management analyst responsibilities."},
+          {q:"Which role ensures the project is completed on time and within budget?",h:"Project manager",c:["Project manager","Business analyst","Infrastructure analyst","Support lead"],a:0,e:"The project manager ensures timely and budget-conscious completion."},
+          {q:"The SDLC is composed of how many fundamental phases?",h:"SDLC",c:["Four","Three","Five","Six"],a:0,e:"The slides show four fundamental phases."},
+          {q:"Which SDLC phase answers 'Why build the system?'",h:"Project phases",c:["Planning","Analysis","Design","Implementation"],a:0,e:"Planning answers why the system should be built."},
+          {q:"Which SDLC phase answers 'Who, what, when, where will the system be?'",h:"Project phases",c:["Analysis","Planning","Design","Implementation"],a:0,e:"Analysis answers who, what, when, and where."},
+          {q:"Which SDLC phase answers 'How will the system work?'",h:"Project phases",c:["Design","Planning","Analysis","Implementation"],a:0,e:"Design answers how the system will work."},
+          {q:"Which SDLC phase is system delivery?",h:"Project phases",c:["Implementation","Analysis","Planning","Design"],a:0,e:"Implementation is the system delivery phase."},
+          {q:"What is the deliverable of the planning phase?",h:"Processes and deliverables",c:["Project Plan","System Proposal","System Specification","Maintenance Plan only"],a:0,e:"The planning phase produces the Project Plan."},
+          {q:"What is the deliverable of the analysis phase?",h:"Processes and deliverables",c:["System Proposal","Project Plan","System Specification","Use-case chart"],a:0,e:"The analysis phase produces the System Proposal."},
+          {q:"What is the deliverable of the design phase?",h:"Processes and deliverables",c:["System Specification","System Proposal","Project Plan","Database only"],a:0,e:"The design phase produces the System Specification."},
+          {q:"What is the deliverable of the implementation phase?",h:"Processes and deliverables",c:["New System and Maintenance Plan","System Proposal","System Specification","Project kickoff"],a:0,e:"Implementation produces the new system and maintenance plan."},
+          {q:"The basic process of analysis involves how many steps?",h:"Analysis steps",c:["Three","Two","Four","Five"],a:0,e:"The slide says analysis involves three steps."},
+          {q:"Which analysis step is understanding the existing situation?",h:"Analysis steps",c:["Analysis strategy","Requirements gathering","System proposal","Design"],a:0,e:"Understanding the existing situation is analysis strategy."},
+          {q:"Which analysis step identifies improvements?",h:"Analysis steps",c:["Requirements gathering","Analysis strategy","Testing","Implementation"],a:0,e:"Identify improvements corresponds to requirements gathering."},
+          {q:"Which design task is listed in the slides?",h:"Design activity",c:["Define architecture, database schema, backend logic, frontend components, and wireframes","Only buy hardware","Only write manuals","Only create meeting notes"],a:0,e:"Those are specifically listed under design."}
+        ]
+      },
+      {
+        id: "chap5",
+        title: "Chapter 5",
+        subtitle: "Process and Project Metrics",
+        notes: [
+          { heading: "Why Measure?", bullets: [
+            "Assess project status, track risks, uncover problem areas, adjust workflow, evaluate quality control"
+          ]},
+          { heading: "Metrics Types", bullets: [
+            "Process measurement is indirect.",
+            "Project measures include inputs, outputs, and results."
+          ]},
+          { heading: "Common Metrics", bullets: [
+            "KLOC, FP, object-oriented metrics, WebApp metrics, DRE"
+          ]}
+        ],
+        questions: [
+          {q:"Why do we measure in software work?",h:"Why measure slide",c:["To assess status, track risks, uncover problems, adjust workflow, and evaluate quality control","Only to rank people","Only to write reports","Only to replace testing"],a:0,e:"Those are the main reasons listed for measurement."},
+          {q:"Process efficacy is measured how?",h:"Process metrics",c:["Indirectly","Directly only","Randomly","Visually"],a:0,e:"The slides say process efficacy is measured indirectly."},
+          {q:"Which is an outcome used in process measurement?",h:"Process measurement outcomes",c:["Errors uncovered before release","Office paint color","Keyboard count","Desk height"],a:0,e:"Errors uncovered before release are one listed outcome."},
+          {q:"Which is another outcome used in process measurement?",h:"Process measurement outcomes",c:["Defects delivered and reported by end-users","Coffee consumption","Chair count","Screen brightness"],a:0,e:"User-reported defects are part of the outcomes listed."},
+          {q:"Which is another outcome used in process measurement?",h:"Process measurement outcomes",c:["Work products delivered","Air-conditioning brand","Laptop sticker count","Room size"],a:0,e:"Work products delivered is one of the listed outcomes."},
+          {q:"Which is another outcome used in process measurement?",h:"Process measurement outcomes",c:["Human effort expended","Mousepad color","Desk number","Battery logo"],a:0,e:"Human effort expended is part of process outcomes."},
+          {q:"Which is another outcome used in process measurement?",h:"Process measurement outcomes",c:["Calendar time expended","Window shape","Router weight","Cable color"],a:0,e:"Calendar time expended is listed as an outcome."},
+          {q:"Which is another outcome used in process measurement?",h:"Process measurement outcomes",c:["Conformance to the schedule","Chair quality","Fan speed","Ink level"],a:0,e:"Conformance to the schedule is one of the outcomes."},
+          {q:"Every project should measure which three categories?",h:"Project metrics",c:["Inputs, outputs, and results","Plans, tools, and chairs","Servers, code, and rooms","People, budget, and coffee"],a:0,e:"The slides say every project should measure inputs, outputs, and results."},
+          {q:"Which guideline is correct regarding metrics?",h:"Metrics guidelines",c:["Use common sense and organizational sensitivity when interpreting metrics","Obsess on one metric","Use metrics to threaten individuals","Hide all results from teams"],a:0,e:"That is a key metrics guideline."},
+          {q:"Which guideline is correct regarding metrics?",h:"Metrics guidelines",c:["Provide regular feedback to individuals and teams","Never share feedback","Punish low numbers immediately","Ignore context"],a:0,e:"Regular feedback is recommended."},
+          {q:"Which guideline is correct regarding metrics?",h:"Metrics guidelines",c:["Do not use metrics to appraise individuals","Rank every programmer publicly","Threaten people with charts","Ignore team context"],a:0,e:"Metrics should not be used to appraise individuals."},
+          {q:"Size-oriented metrics are based on what?",h:"Size-oriented metrics",c:["KLOC or LOC","FP only","Use cases only","Screens only"],a:0,e:"Size-oriented metrics are based on lines of code or KLOC."},
+          {q:"Function-oriented metrics are based on what?",h:"Function-oriented metrics",c:["Function points (FP)","Only KLOC","Only schedule days","Only budget"],a:0,e:"Function-oriented metrics use function points."},
+          {q:"Why is FP often preferred?",h:"FP discussion",c:["It is programming-language independent","It always gives smaller numbers","It removes all defects","It ignores reuse"],a:0,e:"FP is often preferred because it is language independent."},
+          {q:"Which is an object-oriented metric listed in the slides?",h:"OO metrics",c:["Number of scenario scripts","Number of printers","Number of cables","Number of chairs"],a:0,e:"Number of scenario scripts is one OO metric listed."},
+          {q:"Which is another object-oriented metric listed in the slides?",h:"OO metrics",c:["Number of support classes","Number of keyboards","Number of windows","Number of fans"],a:0,e:"Number of support classes is an OO metric listed."},
+          {q:"Which is a WebApp project metric?",h:"WebApp metrics",c:["Number of static web pages","Number of whiteboards","Number of switches","Number of projectors"],a:0,e:"Static web pages are part of WebApp project metrics."},
+          {q:"Which is another WebApp project metric?",h:"WebApp metrics",c:["Number of dynamic web pages","Number of shoes","Number of folders on desk","Number of staplers"],a:0,e:"Dynamic web pages are part of WebApp project metrics."},
+          {q:"What is the formula for DRE?",h:"DRE",c:["E / (E + D)","D / (E + D)","E x D","E - D"],a:0,e:"Defect Removal Efficiency is E divided by E plus D."}
+        ]
+      }
+    ];
+
+    let currentChapter = null;
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+    let soundOn = true;
+    let audioReady = false;
+
+    const chapterGrid = document.getElementById("chapterGrid");
+    const notesBox = document.getElementById("notesBox");
+    const quizBox = document.getElementById("quizBox");
+    const questionText = document.getElementById("questionText");
+    const questionHint = document.getElementById("questionHint");
+    const choicesBox = document.getElementById("choicesBox");
+    const feedbackBox = document.getElementById("feedbackBox");
+    const nextBtn = document.getElementById("nextBtn");
+    const restartBtn = document.getElementById("restartBtn");
+    const soundBtn = document.getElementById("soundBtn");
+    const chapterPill = document.getElementById("chapterPill");
+    const questionPill = document.getElementById("questionPill");
+    const scoreStat = document.getElementById("scoreStat");
+    const progressStat = document.getElementById("progressStat");
+    const chapterStat = document.getElementById("chapterStat");
+    const bestStat = document.getElementById("bestStat");
+    const resultBox = document.getElementById("resultBox");
+    const finalScore = document.getElementById("finalScore");
+    const finalMessage = document.getElementById("finalMessage");
+    const badgeRow = document.getElementById("badgeRow");
+
+    let audioCtx = null;
+
+    function initAudio() {
+      if (audioReady) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+      audioCtx = new AudioContextClass();
+      audioReady = true;
+    }
+
+    function makeSound(freq = 440, duration = 0.1, type = "sine", volume = 0.035) {
+      if (!soundOn) return;
+      if (!audioReady) initAudio();
+      if (!audioCtx) return;
+
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+      gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playClick() {
+      makeSound(520, 0.06, "triangle", 0.03);
+    }
+    function playCorrect() {
+      makeSound(680, 0.08, "sine", 0.04);
+      setTimeout(() => makeSound(900, 0.12, "sine", 0.04), 90);
+    }
+    function playWrong() {
+      makeSound(240, 0.12, "square", 0.03);
+      setTimeout(() => makeSound(180, 0.14, "square", 0.03), 120);
+    }
+    function playFinish() {
+      makeSound(620, 0.08, "sine", 0.04);
+      setTimeout(() => makeSound(820, 0.08, "sine", 0.04), 90);
+      setTimeout(() => makeSound(1020, 0.12, "sine", 0.04), 180);
+    }
+
+    function renderChapters() {
+      chapterGrid.innerHTML = "";
+      chapters.forEach((chapter, index) => {
+        const btn = document.createElement("button");
+        btn.className = "chapter-btn";
+        btn.textContent = chapter.title;
+        btn.addEventListener("click", () => {
+          initAudio();
+          playClick();
+          document.querySelectorAll(".chapter-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          loadChapter(index);
+        });
+        chapterGrid.appendChild(btn);
+      });
+    }
+
+    function loadChapter(index) {
+      currentChapter = chapters[index];
+      currentIndex = 0;
+      score = 0;
+      answered = false;
+      quizBox.style.display = "block";
+      resultBox.classList.remove("show");
+      feedbackBox.classList.remove("show");
+      nextBtn.disabled = true;
+      chapterStat.textContent = currentChapter.title;
+      renderNotes(currentChapter);
+      renderQuestion();
+      updateStats();
+    }
+
+    function renderNotes(chapter) {
+      notesBox.innerHTML = "";
+      chapter.notes.forEach(note => {
+        const div = document.createElement("div");
+        div.className = "note";
+        div.innerHTML = `
+          <h4>${note.heading}</h4>
+          <ul>${note.bullets.map(item => `<li>${item}</li>`).join("")}</ul>
+        `;
+        notesBox.appendChild(div);
+      });
+    }
+
+    function renderQuestion() {
+      const q = currentChapter.questions[currentIndex];
+      answered = false;
+      feedbackBox.classList.remove("show");
+      feedbackBox.innerHTML = "";
+      nextBtn.disabled = true;
+      resultBox.classList.remove("show");
+
+      chapterPill.textContent = `${currentChapter.title} • ${currentChapter.subtitle}`;
+      questionPill.textContent = `Question ${currentIndex + 1} of ${currentChapter.questions.length}`;
+      questionText.textContent = q.q;
+      questionHint.textContent = q.h;
+      choicesBox.innerHTML = "";
+
+      q.c.forEach((choice, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "choice";
+        btn.textContent = choice;
+        btn.addEventListener("click", () => handleAnswer(btn, idx));
+        choicesBox.appendChild(btn);
+      });
+
+      updateStats();
+    }
+
+    function handleAnswer(button, selectedIndex) {
+      if (answered) return;
+      answered = true;
+      initAudio();
+      playClick();
+
+      const q = currentChapter.questions[currentIndex];
+      const allChoices = document.querySelectorAll(".choice");
+
+      allChoices.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === q.a) btn.classList.add("correct");
+      });
+
+      if (selectedIndex === q.a) {
+        score++;
+        button.classList.add("correct");
+        playCorrect();
+        feedbackBox.innerHTML = `<strong>Correct!</strong><br>${q.e}`;
+      } else {
+        button.classList.add("wrong");
+        playWrong();
+        feedbackBox.innerHTML = `<strong>Wrong.</strong><br>${q.e}`;
+      }
+
+      feedbackBox.classList.add("show");
+      nextBtn.disabled = false;
+      updateStats();
+    }
+
+    function updateStats() {
+      scoreStat.textContent = score;
+      if (currentChapter) {
+        const done = Math.min(currentIndex + (answered ? 1 : 0), currentChapter.questions.length);
+        progressStat.textContent = `${done}/${currentChapter.questions.length}`;
+        const percent = Math.round((score / currentChapter.questions.length) * 100);
+        bestStat.textContent = `${percent}%`;
+      } else {
+        progressStat.textContent = "0/0";
+        bestStat.textContent = "0%";
+      }
+    }
+
+    function nextQuestion() {
+      initAudio();
+      playClick();
+      if (!currentChapter) return;
+
+      if (currentIndex < currentChapter.questions.length - 1) {
+        currentIndex++;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      const percent = Math.round((score / currentChapter.questions.length) * 100);
+      finalScore.textContent = `${score}/${currentChapter.questions.length}`;
+
+      let msg = "";
+      let badges = [];
+      if (percent === 100) {
+        msg = "Perfect score. You reviewed this chapter very well.";
+        badges = ["Perfect", "Chapter Master", "Exam Ready"];
+      } else if (percent >= 85) {
+        msg = "Very strong result. Review the missed items once more.";
+        badges = ["Great Job", "Strong Review"];
+      } else if (percent >= 70) {
+        msg = "Good result. Replay this chapter to improve more.";
+        badges = ["Good Try", "Keep Going"];
+      } else {
+        msg = "Read the notes again and replay this chapter.";
+        badges = ["Practice More"];
+      }
+
+      finalMessage.textContent = `${msg} Your score is ${percent}%.`;
+      badgeRow.innerHTML = "";
+      badges.forEach(label => {
+        const span = document.createElement("span");
+        span.className = "badge";
+        span.textContent = label;
+        badgeRow.appendChild(span);
+      });
+
+      resultBox.classList.add("show");
+      nextBtn.disabled = true;
+      if (percent >= 70) playFinish();
+      updateStats();
+    }
+
+    nextBtn.addEventListener("click", nextQuestion);
+
+    restartBtn.addEventListener("click", () => {
+      if (!currentChapter) return;
+      initAudio();
+      playClick();
+      const idx = chapters.findIndex(ch => ch.id === currentChapter.id);
+      loadChapter(idx);
+    });
+
+    soundBtn.addEventListener("click", () => {
+      initAudio();
+      soundOn = !soundOn;
+      soundBtn.textContent = soundOn ? "Sound: ON" : "Sound: OFF";
+      if (soundOn) playClick();
+    });
+
+    document.addEventListener("click", initAudio, { once: true });
+    document.addEventListener("touchstart", initAudio, { once: true });
+
+    renderChapters();
+  </script>
+</body>
+</html>
